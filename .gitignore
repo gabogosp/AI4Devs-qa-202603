@@ -12,6 +12,12 @@
 # testing
 **/coverage
 
+# playwright (e2e)
+**/test-results
+**/playwright-report
+**/.playwright
+**/blob-report
+
 # production
 **/build
 **/dist
