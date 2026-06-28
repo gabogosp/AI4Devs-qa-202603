@@ -1,47 +1,48 @@
-# Pruebas E2E – Pantalla de Posiciones (Playwright)
+# E2E Tests – Position Screen (Playwright)
 
-Pruebas End-to-End que validan la pantalla de detalle de una posición
-(`/positions/:id`, componente `PositionDetails.js`).
+End-to-end tests that validate the position detail screen
+(`/positions/:id`, component `PositionDetails.js`).
 
-Archivo de pruebas: `tests/e2e/position.spec.ts` (dos `test()` dentro de un `describe()`).
+Test file: `tests/e2e/position.spec.ts` (two `test()` cases inside a `describe()`).
 
-## Cobertura
+## Coverage
 
-1. **Escenario 1 – Carga de la página**: título de la posición, columnas/fases
-   del proceso y tarjetas de candidatos ubicadas en la columna de su fase actual.
-2. **Escenario 2 – Cambio de fase (drag-and-drop)**: se arrastra una tarjeta a
-   otra columna (react-beautiful-dnd vía teclado) y se valida tanto la UI como la
-   petición al backend interceptada: método `PUT`, URL `/candidates/:id` con el
-   id del candidato movido, body con la nueva fase (`currentInterviewStep`) y
-   respuesta 2xx.
+1. **Scenario 1 – Page load**: position title, process columns/stages and
+   candidate cards placed in the column matching their current stage.
+2. **Scenario 2 – Stage change (drag-and-drop)**: a card is dragged to another
+   column (react-beautiful-dnd via keyboard) and both the UI and the intercepted
+   backend request are validated: method `PUT`, URL `/candidates/:id` with the id
+   of the moved candidate, body carrying the new stage (`currentInterviewStep`)
+   and a 2xx response.
 
-> El enunciado cita el endpoint como `PUT /candidate/:id`; la implementación real
-> es `PUT /candidates/:id` (plural) y es contra la que se valida.
+> The assignment cites the endpoint as `PUT /candidate/:id`; the actual
+> implementation is `PUT /candidates/:id` (plural), which is what the tests
+> validate against.
 
-Todos los textos (título, fases, candidatos) se derivan en runtime del backend;
-no hay literales inventados en los selectores.
+All texts (title, stages, candidates) are derived at runtime from the backend;
+there are no hard-coded literals in the selectors.
 
-## Requisitos previos
+## Prerequisites
 
-La app completa debe estar levantada (ver README raíz del proyecto):
+The full app must be running (see the project root README):
 
 ```sh
-# 1) Base de datos PostgreSQL (con datos de seed)
-docker-compose up -d            # desde la raíz del proyecto
+# 1) PostgreSQL database (with seed data)
+docker-compose up -d            # from the project root
 
-# 2) Backend en http://localhost:3010
+# 2) Backend on http://localhost:3010
 cd backend && npm install && npx prisma generate && npm run dev
 
-# 3) Frontend en http://localhost:3000
+# 3) Frontend on http://localhost:3000
 cd frontend && npm install
 NODE_OPTIONS=--openssl-legacy-provider BROWSER=none PORT=3000 npm start
 ```
 
-Datos de seed usados (posición `1` = *Senior Full-Stack Engineer*):
-fases `Initial Screening` / `Technical Interview` / `Manager Interview` y
-candidatos John Doe, Jane Smith y Carlos García.
+Seed data used (position `1` = *Senior Full-Stack Engineer*):
+stages `Initial Screening` / `Technical Interview` / `Manager Interview` and
+candidates John Doe, Jane Smith and Carlos García.
 
-## Instalación de Playwright (dentro de /frontend)
+## Installing Playwright (inside /frontend)
 
 ```sh
 cd frontend
@@ -49,23 +50,26 @@ npm install -D @playwright/test
 npx playwright install chromium
 ```
 
-## Ejecución
+## Running
 
 ```sh
 cd frontend
-npx playwright test                                 # toda la suite (headless)
-npx playwright test --ui                            # modo interactivo
-npx playwright test tests/e2e/position.spec.ts      # archivo específico
-npx playwright test -g "Escenario 1"                # solo carga de la página
-npx playwright test -g "Escenario 2"                # solo drag-and-drop
-npx playwright show-report                          # reporte HTML
+npx playwright test                                 # full suite (headless)
+npx playwright test --ui                            # interactive mode
+npx playwright test tests/e2e/position.spec.ts      # specific file
+npx playwright test -g "Escenario 1"                # only page load (scenario 1)
+npx playwright test -g "Escenario 2"                # only drag-and-drop (scenario 2)
+npx playwright show-report                          # HTML report
 ```
 
-## Notas
+> The `-g` filters use the literal test titles defined in `position.spec.ts`,
+> which are kept in Spanish (allowed in code); the documentation itself is in English.
 
-- Selectores: se priorizan `getByRole` / `getByText` y los anclajes estables
-  de react-beautiful-dnd (`data-rbd-droppable-id`, `data-rbd-drag-handle-draggable-id`).
-  **No se modificó el código de la aplicación.**
-- El `beforeEach` reintenta la carga porque `PositionDetails.js` tiene una
-  condición de carrera entre `fetchInterviewFlow()` y `fetchCandidates()` que
-  ocasionalmente deja el tablero sin tarjetas hasta recargar.
+## Notes
+
+- Selectors: `getByRole` / `getByText` and the stable react-beautiful-dnd anchors
+  (`data-rbd-droppable-id`, `data-rbd-drag-handle-draggable-id`) are preferred.
+  **No application code was modified.**
+- The `beforeEach` retries the load because `PositionDetails.js` has a race
+  condition between `fetchInterviewFlow()` and `fetchCandidates()` that
+  occasionally leaves the board with no cards until a reload happens.
